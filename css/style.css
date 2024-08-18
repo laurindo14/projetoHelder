@@ -1,21 +1,47 @@
+/* Estilização da Tabela */
 .table {
-    border: 1px solid;
+    border-collapse: collapse;
+    width: 100%;
     margin: auto;
     margin-bottom: 20px;
 }
 
-table {
-    
+.table, .table th, .table td {
+    border: 1px solid #dee2e6; /* Bordas suaves */
 }
 
+.table th, .table td {
+    padding: 10px; /* Espaçamento interno */
+    text-align: left; /* Alinhamento do texto à esquerda */
+}
+
+.table th {
+    background-color: #f8f9fa; /* Cor de fundo dos cabeçalhos */
+    color: #495057; /* Cor do texto dos cabeçalhos */
+}
+
+.table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Cor de fundo alternada para linhas pares */
+}
+
+.table tr:hover {
+    background-color: #e9ecef; /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilização do Cabeçalho */
 .posicionarCabecalho {
     text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
+/* Estilização dos Links */
 a {
-    color: aliceblue;
+    color: #007bff; /* Cor dos links */
+    text-decoration: none; /* Remover sublinhado */
 }
 
-a:link { 
-    text-decoration:none;
+a:hover {
+    text-decoration: underline; /* Sublinhado ao passar o mouse */
+    color: #0056b3; /* Cor dos links ao passar o mouse */
 }
