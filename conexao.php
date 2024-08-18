@@ -1,77 +1,158 @@
 <?php
 
-// Verifica se o POST existe antes de inserir uma nova pessoa
-if(isset($_POST["acao"])){
-    if ($_POST["acao"]=="inserir"){
-        inserirPessoa();
-    }
-    if ($_POST["acao"]=="alterar"){
-        alterarPessoa();
-    }
-    if($_POST["acao"]=="excluir"){
-        excluirPessoa();
+// Verifica se o POST existe antes de inserir, alterar ou excluir uma categoria ou produto
+if (isset($_POST["acao"])) {
+    switch ($_POST["acao"]) {
+        case "inserirCategoria":
+            inserirCategoria();
+            break;
+        case "inserirProduto":
+            inserirProduto();
+            break;
+        case "alterarCategoria":
+            alterarCategoria();
+            break;
+        case "alterarProduto":
+            alterarProduto();
+            break;
+        case "excluirCategoria":
+            excluirCategoria();
+            break;
+        case "excluirProduto":
+            excluirProduto();
+            break;
     }
 }
 
-// Responsável por criar uma conexão com meu banco
+// Responsável por criar uma conexão com o banco
 function abrirBanco() {
-    $conexao = new mysqli("localhost", "root", "", "agenda");
+    $conexao = new mysqli("localhost", "root", "", "mercado2");
+    if ($conexao->connect_error) {
+        die("Conexão falhou: " . $conexao->connect_error);
+    }
     return $conexao;
 }
 
-// Função responsável inseir uma pessoa no meu banco de dados
-    function inserirPessoa() {
-        $banco = abrirBanco();
-        $sql = "INSERT INTO pessoa(nome, nascimento, endereco, telefone) 
-        VALUES ('{$_POST["nome"]}','{$_POST["nascimento"]}','{$_POST["endereco"]}','{$_POST["telefone"]}')";
-        $banco->query($sql);
-        $banco->close();
-        voltarIndex();
-    }
+// Função responsável por inserir uma categoria no banco de dados
+function inserirCategoria() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("INSERT INTO categoria(nome) VALUES (?)");
+    $stmt->bind_param("s", $_POST["nome"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
 
-// Função responsável editar uma pessoa no meu banco de dados
-    function alterarPessoa() {
-        $banco = abrirBanco();
-        $sql = "UPDATE pessoa SET nome='{$_POST["nome"]}',nascimento='{$_POST["nascimento"]}',endereco='{$_POST["endereco"]}',telefone='{$_POST["telefone"]}' WHERE id='{$_POST["id"]}'";
-        $banco->query($sql);
-        $banco->close();
-        voltarIndex();
-    }
+// Função responsável por inserir um produto no banco de dados
+function inserirProduto() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("INSERT INTO produto(nome, preco, id_categoria) VALUES (?, ?, ?)");
+    $stmt->bind_param("sdi", $_POST["nome"], $_POST["preco"], $_POST["id_categoria"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
 
-// Função responsável excluir uma pessoa no meu banco de dados
-    function excluirPessoa() {
-        $banco = abrirBanco();
-        $sql = "DELETE FROM pessoa WHERE id='{$_POST["id"]}'";
-        $banco->query($sql);
-        $banco->close();
-        voltarIndex();
-    }
+// Função responsável por alterar uma categoria no banco de dados
+function alterarCategoria() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("UPDATE categoria SET nome=? WHERE id=?");
+    $stmt->bind_param("si", $_POST["nome"], $_POST["id"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
 
-    function selectAllPessoa() {
-        $banco = abrirBanco();
-        $sql = "SELECT * FROM pessoa ORDER BY nome";
-        $resultado = $banco->query($sql);
-        $banco->close();
-        // Laço que pega as informações do meu banco, organiza linha a linha e armazena na var $grupo
-        while($row = mysqli_fetch_array($resultado)) {
-            $grupo[] = $row;
-        }
-        return $grupo;
-    }
+// Função responsável por alterar um produto no banco de dados
+function alterarProduto() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("UPDATE produto SET nome=?, preco=?, id_categoria=? WHERE id=?");
+    $stmt->bind_param("sdii", $_POST["nome"], $_POST["preco"], $_POST["id_categoria"], $_POST["id"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
 
-    function selectIdPessoa($id) {
-        $banco = abrirBanco();
-        $sql = "SELECT * FROM pessoa WHERE id=".$id;
-        $resultado = $banco->query($sql);
-        $banco->close();
-        // Laço que pega as informações do meu banco, organiza linha a linha e armazena na var $grupo
-        $pessoa = mysqli_fetch_assoc($resultado);
-        return $pessoa;
-    }
+// Função responsável por excluir uma categoria no banco de dados
+function excluirCategoria() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("DELETE FROM categoria WHERE id=?");
+    $stmt->bind_param("i", $_POST["id"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
 
-// Após inserir uma nova pessoa, retorna para a página principal
-    function voltarIndex(){
-        header("Location:index.php");
-    }
+// Função responsável por excluir um produto no banco de dados
+function excluirProduto() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("DELETE FROM produto WHERE id=?");
+    $stmt->bind_param("i", $_POST["id"]);
+    $stmt->execute();
+    $stmt->close();
+    $banco->close();
+    voltarIndex();
+}
+
+// Função para selecionar todas as categorias
+function selectAllCategoria() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("SELECT * FROM categoria ORDER BY nome");
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $grupo = $resultado->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $banco->close();
+    return $grupo;
+}
+
+// Função para selecionar todos os produtos
+function selectAllProduto() {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON p.id_categoria = c.id ORDER BY p.nome");
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $grupo = $resultado->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    $banco->close();
+    return $grupo;
+}
+
+// Função para selecionar uma categoria por ID
+function selectIdCategoria($id) {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("SELECT * FROM categoria WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $categoria = $resultado->fetch_assoc();
+    $stmt->close();
+    $banco->close();
+    return $categoria;
+}
+
+// Função para selecionar um produto por ID
+function selectIdProduto($id) {
+    $banco = abrirBanco();
+    $stmt = $banco->prepare("SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON p.id_categoria = c.id WHERE p.id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $produto = $resultado->fetch_assoc();
+    $stmt->close();
+    $banco->close();
+    return $produto;
+}
+
+// Após inserir, alterar ou excluir, retorna para a página principal
+function voltarIndex() {
+    header("Location: index.php");
+    exit();
+}
 
 ?>

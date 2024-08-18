@@ -1,36 +1,60 @@
 <?php
+include("conexao.php");
 
-
+$tipo = isset($_GET['tipo']) ? $_GET['tipo'] : 'produto';
 ?>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-<link rel="stylesheet" type="text/css" href="css/style.css">
-<meta charset="UTF-8">
-<div class="container">
-    <form name="dadosPessoa" action="conexao.php" method="post">
-        <table>
-            <tbody>
-                <tr>
-                    <td>Nome: </td>
-                    <td><input type="text" name="nome" value=""></td>
-                </tr>
-                <tr>
-                    <td>Nascimento: </td>
-                    <td><input type="date" name="nascimento" value=""></td>
-                </tr>
-                <tr>
-                    <td>Telefone: </td>
-                    <td><input type="text" name="telefone" value=""></td>
-                </tr>
-                <tr>
-                    <td>Endereço: </td>
-                    <td><input type="text" name="endereco" value=""></td>
-                </tr>
-                <tr>
-                    <td><input type="hidden" name="acao" value="inserir"></td>
-                    <td><input type="submit" name="Enviar" value="Enviar"></td>
-                </tr>
-            </tbody>
-        </table> 
-    </form>
-</div>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar <?= ucfirst($tipo) ?></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .container {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Adicionar <?= ucfirst($tipo) ?></h1>
+        <form action="conexao.php" method="post">
+            <?php if ($tipo == 'categoria'): ?>
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" class="form-control" required>
+                </div>
+            <?php else: ?>
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="preco">Preço:</label>
+                    <input type="text" id="preco" name="preco" class="form-control" required pattern="^\d+(\.\d{1,2})?$" title="Formato: 123.45">
+                </div>
+                <div class="form-group">
+                    <label for="id_categoria">Categoria:</label>
+                    <select id="id_categoria" name="id_categoria" class="form-control" required>
+                        <option value="" disabled selected>Selecione uma categoria</option>
+                        <?php
+                        // Aqui você deve listar as categorias existentes
+                        $categorias = selectAllCategoria();
+                        foreach ($categorias as $categoria) {
+                            echo '<option value="' . htmlspecialchars($categoria["id"]) . '">' . htmlspecialchars($categoria["nome"]) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+            <?php endif; ?>
+            <input type="hidden" name="acao" value="inserir<?= ucfirst($tipo) ?>">
+            <button type="submit" class="btn btn-primary">Adicionar <?= ucfirst($tipo) ?></button>
+        </form>
+        <a href="index.php?tipo=<?= $tipo ?>" class="btn btn-secondary mt-3">Voltar</a>
+    </div>
+</body>
+</html>
